@@ -1,5 +1,7 @@
 #include "protocol.h"
-
+#include <time.h>
+int time ,timeout_enabled = 0;
+time_t start ,end;
 
 void insert_event(int data) 
 {
@@ -26,6 +28,12 @@ int remove_event()
 
 void wait_for_event(event_type* event)
 {
+	time = clock();
+	if(time > end)
+		{
+			timeout_enabled = 1;
+		}
+
 	if (packet_count != 0 && network_layer_enabled == 1)
 		insert_event(4);
 
@@ -80,6 +88,17 @@ void to_network_layer(packet * p)
       network_layer_buffer [++packet_rear] = *p;
       packet_count++;
    }
+}
+
+void start_timer(seq_nr k)
+{
+	start = clock();
+	end = start + 10;
+}
+
+void stop_timer(seq_nr k)
+{
+	timeout_enabled = 0;
 }
 
 void enable_network_layer()
