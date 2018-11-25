@@ -26,9 +26,9 @@ void main()
 	int port = 54000;						// Listening port # on the server
 
 	// Initialize WinSock
-	WSAData dataa;
+	WSAData data;
 	WORD ver = MAKEWORD(2, 2);
-	int wsResult = WSAStartup(ver, &dataa);
+	int wsResult = WSAStartup(ver, &data);
 	if (wsResult != 0)
 	{
 		cerr << "Can't start Winsock, Err #" << wsResult << endl;
@@ -66,18 +66,16 @@ void main()
 	// Do-while loop to send and receive data
 	char buf[4096];
 	int a[32] , b[32] ;
-	string userInput;
 	frame r ;
 	do
 	{
-		       // Wait for response
-				ZeroMemory(buf, 4096);
-				int bytesReceived = recv(sock, buf, 4096, 0);
-				if (bytesReceived > 0)
-				{
-					// Echo response to console
-					
-						int j = 0 ; string sum ;
+		// Wait for response
+		ZeroMemory(buf, 4096);
+		int bytesReceived = recv(sock, buf, 4096, 0);
+		if (bytesReceived > 0)
+		{
+			// Echo response to console
+			int j = 0 ; string sum ;
 	                    for(int l= 3 ; l >= 0; l--)    
                             {    
 	                     	 if (buf[l]==0)
