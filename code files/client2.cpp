@@ -2,6 +2,19 @@
 #include <string>
 #include <WS2tcpip.h>
 #include <conio.h>
+#define MAX_PKT 1024  
+
+typedef unsigned int seq_nr;                         
+    typedef struct {unsigned char data[MAX_PKT];} packet;  
+    typedef enum {data, ack, nak} frame_kind;   
+	
+	typedef struct {                                       
+	frame_kind kind;                                   
+	seq_nr seq;                                       
+	seq_nr ack;                                       
+	packet info;    
+} frame;
+
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -13,9 +26,9 @@ void main()
 	int port = 54000;						// Listening port # on the server
 
 	// Initialize WinSock
-	WSAData data;
+	WSAData dataa;
 	WORD ver = MAKEWORD(2, 2);
-	int wsResult = WSAStartup(ver, &data);
+	int wsResult = WSAStartup(ver, &dataa);
 	if (wsResult != 0)
 	{
 		cerr << "Can't start Winsock, Err #" << wsResult << endl;
@@ -52,37 +65,94 @@ void main()
 
 	// Do-while loop to send and receive data
 	char buf[4096];
+	int a[32] , b[32] ;
 	string userInput;
-
+	frame r ;
 	do
 	{
-		// Prompt the user for some text
-		cout << "> ";
-		getline(cin, userInput);
-
-		if (userInput.size() > 0)		// Make sure the user has typed in something
-		{
-			// Send the text
-			int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-			if (sendResult != SOCKET_ERROR)
-			{
-				// Wait for response
+		       // Wait for response
 				ZeroMemory(buf, 4096);
 				int bytesReceived = recv(sock, buf, 4096, 0);
 				if (bytesReceived > 0)
 				{
 					// Echo response to console
-					for(int i=0;i< 10;i++)
-	                {
-						//cout << "SERVER> " << string(buf, 0, bytesReceived) << endl;
-						cout << int(buf[i])  << endl ;
-					}
-
 					
+						int j = 0 ; string sum ;
+	                    for(int l= 3 ; l >= 0; l--)    
+                            {    
+	                     	 if (buf[l]==0)
+		                 	  for(int i=0; i< 8; i++)    
+                                 { 
+                                   a[j] = 0;
+				                   j++;
+		                         }
+
+		                     else
+			                  for(int k=0; k< 8; k++)    
+                                 { 
+                                    a[j]=buf[l]%2;    
+			                        buf[l] = buf[l]/2;  
+			                        j++;
+		                         }
+	                           }
+	                     for(j=j-1 ;j >=0 ;j--)
+							 sum+= to_string(a[j]) ; 
+		                 r.seq = stoull(sum, 0, 2);
+		                cout<<" seq-no " << r.seq << endl;
+
+
+//=========================================================================================
+						
+						int d = 0 ; string sum2 ;
+	                    for(int l= 7 ; l >= 4; l--)    
+                            {    
+	                     	 if (buf[l]==0)
+		                 	  for(int i=0; i< 8; i++)    
+                                 { 
+                                   b[d] = 0;
+				                   d++;
+		                         }
+
+		                     else
+			                  for(int k=0; k< 8; k++)    
+                                 { 
+                                    b[d]=buf[l]%2;    
+			                        buf[l] = buf[l]/2;  
+			                        d++;
+		                         }
+	                           } 
+	                     for(d=d-1 ;d >=0 ;d--)
+							 sum2+= to_string(b[d]) ; 
+		                r.ack = stoull(sum2, 0, 2);
+		                cout<<" ack " << r.ack << endl;
+						
+//=====================================================================================
+						if (buf[8]==0)
+						 {
+							r.kind = data ;
+						    cout<<" frame-kind is data" << endl;
+						 }
+						 
+							
+						else if(buf[8]==1)
+						 {
+							r.kind = ack ;
+						   cout<<" frame-kind is ack" << endl;
+						 }
+						   
+						else
+						  {
+							r.kind = nak ;
+						   cout<<" frame-kind is nak" << endl;
+						  }
+//====================================================================================
+                        for(int m=0;m< 1023;m++)
+	                     {
+							 r.info.data[m] =  buf[m+9];
+							 cout<< r.info.data[m];
+						 }
 				}
-			}
-		}
-	
+
 	} while (userInput.size() > 0);
 
 	// Gracefully close down everything
