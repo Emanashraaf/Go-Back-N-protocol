@@ -131,7 +131,7 @@ void main()
 	 char * po = serialize_temp(buf2, v);
 	while (true)
 	{
-		ZeroMemory(buf, 4096);
+		ZeroMemory(buf2, 4096);
 		send(clientSocket, buf2, 4096 , 0);					
 	}
 		
