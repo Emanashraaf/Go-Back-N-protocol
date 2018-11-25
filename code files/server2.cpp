@@ -1,5 +1,7 @@
 #include <iostream>
 #include <WS2tcpip.h>
+#include <iostream>
+#include <WS2tcpip.h>
 #include <string>
 #include <conio.h>
 #define MAX_PKT 1024  
@@ -8,8 +10,8 @@
 
 using namespace std;
 
-typedef unsigned int seq_nr;                           /* sequence or ack numbers */
-    typedef struct {unsigned char data[MAX_PKT];} packet;  /* packet definition */
+typedef unsigned int seq_nr;                         
+    typedef struct {unsigned char data[MAX_PKT];} packet;  
     typedef enum {data, ack, nak} frame_kind;   
 	
 	typedef struct {                                       
@@ -17,8 +19,6 @@ typedef unsigned int seq_nr;                           /* sequence or ack number
 	seq_nr seq;                                       
 	seq_nr ack;                                       
 	packet info;    
-	
-
 } frame;
 
 	 char* serialize_int( char* buffer, seq_nr value)
@@ -33,7 +33,7 @@ typedef unsigned int seq_nr;                           /* sequence or ack number
 	 char* serialize_packet( char* buffer, packet value)
     {
 		int i;
-		for( i=0;i< 2;i++)
+		for( i=0;i< sizeof(value.data) ;i++)
           {
 			  buffer[i] = value.data[i];		
 	      }	
@@ -60,11 +60,6 @@ typedef unsigned int seq_nr;                           /* sequence or ack number
 void main()
 {
 	
-
-
-	//=================================================================================================================================
-
-
 	// Initialze winsock
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
@@ -122,15 +117,14 @@ void main()
 
 	// Close listening socket
 	closesocket(listening);
-
-	// While loop: accept and echo message back to client
+	//==================================================
 	
 	char buf[4096];
 	char buf2[4096];
 	int x = 0;
 	frame v ;
-	packet p = {'1','2'};
-	v.seq = 5;
+	packet p = {'1','0','1','1'};
+	v.seq = 1024;
 	v.ack = 1;
 	v.kind = ack;
 	v.info = p ;
@@ -138,28 +132,9 @@ void main()
 	while (true)
 	{
 		ZeroMemory(buf, 4096);
-
-		// Wait for client to send data
-		int bytesReceived = recv(clientSocket, buf, 4096, 0);
-		if (bytesReceived == SOCKET_ERROR)
-		{
-			cerr << "Error in recv(). Quitting" << endl;
-			break;
-		}
-
-		if (bytesReceived == 0)
-		{
-			cout << "Client disconnected " << endl;
-			break;
-		}
-
-		cout << string(buf, 0, bytesReceived) << endl;
-		send(clientSocket, buf2, 4096 , 0);		
-		// Echo message back to client
-		//send(clientSocket, buf, bytesReceived + 1, 0);				
+		send(clientSocket, buf2, 4096 , 0);					
 	}
-	
-	
+		
 	// Close the socket
 	closesocket(clientSocket);
 
@@ -168,3 +143,4 @@ void main()
 	_getch();
 	system("pause");
 }
+
